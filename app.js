@@ -4,6 +4,7 @@ const cancel = document.getElementById("cancel");
 const overlay = document.getElementById("overlay");
 const popUp = document.getElementById("pop-up");
 const form = document.getElementById("form");
+const sort = document.getElementById("sort");
 
 const tasks = [];
 
@@ -19,14 +20,14 @@ const addTask = () => {
   if (taskName && priority >= 1) {
     tasks.push(obj);
     sortTasks();
-    renderTask();
+    renderTask(tasks);
     form.reset();
   } else {
     alert("invalid priority or name");
   }
 };
 
-const renderTask = () => {
+const renderTask = (tasks) => {
   let tbody = "";
   tasks.forEach((task, idx) => {
     tbody += getTasks(task, idx);
@@ -63,12 +64,17 @@ const getTasks = (task, idx) => {
 
 const sortTasks = () => {
   tasks.sort((a, b) => a.priority - b.priority);
-  renderTask();
+  renderTask(tasks);
+};
+
+const sortTaskstoHighest = () => {
+  tasks.sort((a, b) => b.priority - a.priority);
+  renderTask(tasks);
 };
 
 const removeTask = (i) => {
   tasks.splice(i, 1);
-  renderTask();
+  renderTask(tasks);
 };
 
 const popMenu = (i) => {
@@ -90,7 +96,7 @@ const editTask = (i) => {
     };
     tasks.push(obj2);
     sortTasks();
-    renderTask();
+    renderTask(tasks);
     form.reset();
     overlay.style.display = "none";
     popUp.style.display = "none";
@@ -103,6 +109,20 @@ const cancelEdit = () => {
   form.reset();
 };
 
+const filterTasks = () => {
+  const filter = document.getElementById("filter").value;
+  const arr = tasks.filter((task) => {
+    return task.priority == parseInt(filter);
+  });
+  if (filter == 0) {
+    renderTask(tasks);
+  } else {
+    renderTask(arr);
+  }
+};
+
 add.addEventListener("click", addTask);
 cancel.addEventListener("click", cancelEdit);
 ok.addEventListener("click", editTask);
+sort.addEventListener("click", sortTaskstoHighest);
+filter.addEventListener("change", filterTasks);
