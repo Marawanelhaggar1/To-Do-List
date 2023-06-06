@@ -3,126 +3,153 @@ const ok = document.getElementById("ok");
 const cancel = document.getElementById("cancel");
 const overlay = document.getElementById("overlay");
 const popUp = document.getElementById("pop-up");
-const form = document.getElementById("form");
 const sort = document.getElementById("sort");
+const form = document.getElementById("form");
 
-const tasks = [];
+class Task {
+  constructor(taskName, priority) {
+    this.taskName = taskName;
+    this.priority = priority;
+  }
+}
 
-const addTask = () => {
-  let taskName = document.getElementById("task-name").value;
-  let priority = document.getElementById("priority").value;
+class TaskOperation {
+  constructor() {
+    this.tasks = [];
+  }
 
-  const obj = {
-    taskName,
-    priority: parseInt(priority),
+  addTask = () => {
+    let taskName = document.getElementById("task-name").value;
+    let priority = document.getElementById("priority").value;
+    const task = new Task(taskName, priority);
+    console.log(task);
+    console.log(this.tasks);
+
+    if (taskName && priority >= 1) {
+      this.tasks.push(task);
+      this.sortTasks();
+      this.renderTask(this.tasks);
+      form.reset();
+    } else {
+      alert("invalid priority or name");
+    }
   };
 
-  if (taskName && priority >= 1) {
-    tasks.push(obj);
-    sortTasks();
-    renderTask(tasks);
-    form.reset();
-  } else {
-    alert("invalid priority or name");
-  }
-};
+  removeTask = (i) => {
+    this.tasks.splice(i, 1);
+    this.renderTask(this.tasks);
+  };
 
-const renderTask = (tasks) => {
-  let tbody = "";
-  tasks.forEach((task, idx) => {
-    tbody += getTasks(task, idx);
-  });
-  document.getElementById("tasks").innerHTML = tbody;
-};
+  sortTasks = () => {
+    this.tasks.sort((a, b) => a.priority - b.priority);
+    this.renderTask(this.tasks);
+  };
 
-const getTasks = (task, idx) => {
-  let row = `
-  <tr>
-  <th scope="row">${idx + 1}</th>
-                      <th>${task.taskName}</th>
-                      <th>${task.priority}</th>
-                      <th>
-                           <button
-                              type="button" class="btn btn-primary"
-                              onclick = "popMenu(${idx})";
-                            >
-                                Edit
-                            </button>
-                      </th>
-                      <th>
-                           <button
-                              type="button" class="btn btn-danger"
-                              onclick = "removeTask(${idx})";
-                            >
-                                Remove
-                            </button>
-                      </th>
-                      </tr>
-        `;
-  return row;
-};
+  sortTaskstoHighest = () => {
+    this.tasks.sort((a, b) => b.priority - a.priority);
+    this.renderTask(this.tasks);
+  };
 
-const sortTasks = () => {
-  tasks.sort((a, b) => a.priority - b.priority);
-  renderTask(tasks);
-};
+  renderTask = (tasks) => {
+    let tbody = "";
+    tasks.forEach((task, idx) => {
+      tbody += this.getTasks(task, idx);
+    });
+    document.getElementById("rr").innerHTML = tbody;
+  };
 
-const sortTaskstoHighest = () => {
-  tasks.sort((a, b) => b.priority - a.priority);
-  renderTask(tasks);
-};
+  getTasks = (task, idx) => {
+    let row = `
+                <tr>
+                    <td scope="row">${idx + 1}</td>
+                        <td>${task.taskName}</td>
+                        <td>${task.priority}</td>
+                        <td>
+                             <button
+                                type="button" class="btn btn-primary"
+                                onclick = "taskOperation.popMenu(${idx})";
+                              >
+                                  Edit
+                              </button>
+                        </td>
+                        <td>
+                              <input type="checkbox" name="delete" />
+                        </td>
+                        <td>
+                             <button
+                                type="button" class="btn btn-danger"
+                                onclick = "taskOperation.removeTask(${idx})";
+                              >
+                                  Remove
+                              </button>
+                        </td>
+                    </tr>
+          `;
+    return row;
+  };
 
-const removeTask = (i) => {
-  tasks.splice(i, 1);
-  renderTask(tasks);
-};
+  popMenu = (i) => {
+    this.tasks.splice(i, 1);
+    overlay.style.display = "block";
+    popUp.style.display = "block";
+  };
 
-const popMenu = (i) => {
-  tasks.splice(i, 1);
-  overlay.style.display = "block";
-  popUp.style.display = "block";
-};
+  editTask = () => {
+    const name = document.getElementById("name").value;
+    const pr = document.getElementById("prio").value;
 
-const editTask = (i) => {
-  const name = document.getElementById("name").value;
-  const pr = document.getElementById("prio").value;
+    if (!name.trim() && pr != 0) {
+      alert("invalid name and priority");
+    } else {
+      const obj2 = {
+        taskName: name,
+        priority: pr,
+      };
+      this.tasks.push(obj2);
+      this.sortTasks();
+      this.renderTask(this.tasks);
+      form.reset();
+      overlay.style.display = "none";
+      popUp.style.display = "none";
+    }
+  };
 
-  if (!name.trim() && priority < 1) {
-    alert("invalid name and priority");
-  } else {
-    const obj2 = {
-      taskName: name,
-      priority: pr,
-    };
-    tasks.push(obj2);
-    sortTasks();
-    renderTask(tasks);
-    form.reset();
+  cancelEdit = () => {
     overlay.style.display = "none";
     popUp.style.display = "none";
-  }
-};
+    form.reset();
+  };
 
-const cancelEdit = () => {
-  overlay.style.display = "none";
-  popUp.style.display = "none";
-  form.reset();
-};
+  filterTasks = () => {
+    const filter = document.getElementById("filter").value;
+    const arr = this.tasks.filter((task) => {
+      return task.priority == parseInt(filter);
+    });
+    if (filter == 0) {
+      this.renderTask(this.tasks);
+    } else {
+      this.renderTask(arr);
+    }
+  };
 
-const filterTasks = () => {
-  const filter = document.getElementById("filter").value;
-  const arr = tasks.filter((task) => {
-    return task.priority == parseInt(filter);
-  });
-  if (filter == 0) {
-    renderTask(tasks);
-  } else {
-    renderTask(arr);
-  }
-};
+  deleteFinished = () => {
+    let finished = document.getElementsByName("delete");
+    for (let i = 0; i < finished.length; i++) {
+      if (finished[i].checked) {
+        this.tasks.splice(finished[i], 1);
+      }
+    }
+    console.log(finished);
+    console.log(this.tasks);
+    this.renderTask(this.tasks);
+  };
+}
 
-add.addEventListener("click", addTask);
-cancel.addEventListener("click", cancelEdit);
-ok.addEventListener("click", editTask);
-sort.addEventListener("click", sortTaskstoHighest);
-filter.addEventListener("change", filterTasks);
+const taskOperation = new TaskOperation();
+console.log(taskOperation);
+
+add.addEventListener("click", taskOperation.addTask);
+cancel.addEventListener("click", taskOperation.cancelEdit);
+ok.addEventListener("click", taskOperation.editTask);
+sort.addEventListener("click", taskOperation.sortTaskstoHighest);
+filter.addEventListener("change", taskOperation.filterTasks);
